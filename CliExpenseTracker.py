@@ -1,126 +1,96 @@
 import argparse
 
-file ='text.txt'
+
 # print('1- add expense')
 # print('2- add a new expense category')
 # print('3- remove expense')
 # print('4- total expense')
 # print('5- list expense')
-
-def loadexpenses():
-    expenses = []  
-    with open(file, 'r') as f:
-        for line in f:
-            line = line.strip()
-            
-            if not line or line == "category,amount":
-                continue
-                
-            category, price = line.split(',')
-            
-            expenses.append({'category': category, 'amount': price})
-            
-    return expenses  
-
-
-def saveExpense(expnse):
-    with open(file,'w') as f :
-        for e in expnse:
-            f.write(f"{e['category']},{e['amount']}\n")
-
-def addExpense(e):
-    try:
-        isin= False
-        category = input('category: ')
-        amount = int(input('amount: '))
-        for expense in e : 
-            if expense['category'] == category:
-                isin=True
-                am = expense['amount']
-                expense['amount'] =int(am) +  amount
-        if not isin:
-            print('your category was not found ')
-        saveExpense(e)
-    except ValueError:
-        print('enter a valid value ')
-    except Exception:
-        print('make sure u entered the correct category and amount')
+class Expense :
     
-def removeExpense(e):
-    viewExpenses(e)
-    try:
-        category= int(input('Enter which line : ').strip())
-        i = 1
-        if category >=1 and category<=len(e):
-            e.pop(category-1) 
-        saveExpense(e)
-    except ValueError:
-        print(' enter a valid value ')
+    expenses = []  
+    def __init__(self,f):
+
+        self.file =f
+        try:
+            with open(self.file, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        
+                        if not line or line == "category,amount":
+                            continue
+                            
+                        category, price = line.split(',')
+                        
+                        self.expenses.append({'category': category, 'amount': price})
+                        
+        except FileNotFoundError:
+            with open(self.file, 'w')as f :
+                f.write('')
 
 
-def addAnewExpenseCategory(e):
-    try:
-        category= input('Enter New category : ')
-        amount = input('Enter Amount : ')
-        e.append({'category': category , 'amount': amount})
-        saveExpense(e)
-    except ValueError: 
-        print('enter a valid value')
-    except Exception:
-        print('make sure u entered the correct category and amount')
+
+    def saveExpense(self):
+        with open(self.file,'w') as f :
+            for e in self.expenses:
+                f.write(f"{e['category']},{e['amount']}\n")
+
+    def addExpense(self,category,amount):
+        try:
+            isin= False
+            amount = int(amount) 
+            for expense in self.expenses : 
+                if expense['category'] == category:
+                    isin=True
+                    am = expense['amount']
+                    expense['amount'] =int(am) +  amount
+            if not isin:
+                print('your category was not found ')
+            else:
+                self.saveExpense()
+                return True 
+        except ValueError:
+            print('enter a valid value  ')
+        except Exception:
+            print('make sure u entered the correct category and amount')
+        
+    def removeExpense(self):
+        self.viewExpenses()
+        try:
+            category= int(input('Enter which line : ').strip())
+            i = 1
+            if category >=1 and category<=len(self.expenses):
+                self.expenses.pop(category-1) 
+            self.saveExpense()
+        except ValueError:
+            print(' enter a valid value ')
 
 
-def viewExpenses(e):
-    print("Your Expenses :")
-    i= 1
-    for expense in e :
-        print(f"{i}- {expense['category']} = {expense['amount']}$")
-        i+=1
+    def addAnewExpenseCategory(self):
+        try:
+            category= input('Enter New category : ')
+            amount = input('Enter Amount : ')
+            self.expenses.append({'category': category , 'amount': amount})
+            self.saveExpense()
+            return True
+        except ValueError: 
+            print('enter a valid value')
+        except Exception:
+            print('make sure u entered the correct category and amount')
 
 
-def totalExpenses(e):
-    total_amount = 0 
-    for expense in e : 
-        total_amount = total_amount + int(expense['amount'])
-
-    print(total_amount)
-
-parser = argparse.ArgumentParser()
-subparser = parser.add_subparsers(dest='command')
-list_parser = subparser.add_parser('list')
-add_expense= subparser.add_parser('addexpense')
-addNewExpense = subparser.add_parser('addCategory')
-totalexpense = subparser.add_parser('total')
-remove = subparser.add_parser('remove')
-args = parser.parse_args()
-
-e = loadexpenses()
-if args.command == 'list':
-    viewExpenses(e)
-elif  args.command =='remove':
-    removeExpense(e)
-elif  args.command =='total':
-    totalExpenses(e)
-elif  args.command =='addCategory':
-    addAnewExpenseCategory(e)
-elif  args.command =='addexpense':
-    addExpense(e)
-
-# while __name__ =="__main__":
+    def viewExpenses(self):
+        print("Your Expenses :")
+        i= 1
+        for expense in self.expenses :
+            print(f"{i}- {expense['category']} = {expense['amount']}$")
+            i+=1
 
 
-#     option = input('choose what operation you want to do: ')
-#     e= loadexpenses()
-#     match option.strip(): 
-#         case '1':
-#             addExpense(e)
-#         case '2':
-#             addAnewExpenseCategory(e)
-#         case '3':
-#             removeExpense(e)
-#         case '4':
-#             totalExpenses(e)
-#         case '5':
-#             viewExpenses(e)
-#         case _ :
-#             print('enter a valid option')
+    def totalExpenses(self):
+        total_amount = 0 
+        for expense in self.expenses: 
+            total_amount = total_amount + int(expense['amount'])
+
+        print(total_amount)
+
