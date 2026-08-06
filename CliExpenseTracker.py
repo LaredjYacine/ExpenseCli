@@ -1,11 +1,11 @@
+import argparse
+
 file ='text.txt'
-print('1- add expense')
-print('2- add a new expense category')
-print('3- remove expense')
-print('4- total expense')
-print('5- list expense')
-
-
+# print('1- add expense')
+# print('2- add a new expense category')
+# print('3- remove expense')
+# print('4- total expense')
+# print('5- list expense')
 
 def loadexpenses():
     expenses = []  
@@ -85,22 +85,42 @@ def totalExpenses(e):
 
     print(total_amount)
 
+parser = argparse.ArgumentParser()
+subparser = parser.add_subparsers(dest='command')
+list_parser = subparser.add_parser('list')
+add_expense= subparser.add_parser('addexpense')
+addNewExpense = subparser.add_parser('addCategory')
+totalexpense = subparser.add_parser('total')
+remove = subparser.add_parser('remove')
+args = parser.parse_args()
 
-while __name__ =="__main__":
+e = loadexpenses()
+if args.command == 'list':
+    viewExpenses(e)
+elif  args.command =='remove':
+    removeExpense(e)
+elif  args.command =='total':
+    totalExpenses(e)
+elif  args.command =='addCategory':
+    addAnewExpenseCategory(e)
+elif  args.command =='addexpense':
+    addExpense(e)
+
+# while __name__ =="__main__":
 
 
-    option = input('choose what operation you want to do: ')
-    e= loadexpenses()
-    match option.strip(): 
-        case '1':
-            addExpense(e)
-        case '2':
-            addAnewExpenseCategory(e)
-        case '3':
-            removeExpense(e)
-        case '4':
-            totalExpenses(e)
-        case '5':
-            viewExpenses(e)
-        case _ :
-            print('enter a valid option')
+#     option = input('choose what operation you want to do: ')
+#     e= loadexpenses()
+#     match option.strip(): 
+#         case '1':
+#             addExpense(e)
+#         case '2':
+#             addAnewExpenseCategory(e)
+#         case '3':
+#             removeExpense(e)
+#         case '4':
+#             totalExpenses(e)
+#         case '5':
+#             viewExpenses(e)
+#         case _ :
+#             print('enter a valid option')
