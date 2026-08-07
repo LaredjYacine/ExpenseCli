@@ -6,9 +6,5 @@ def es():
 
 
 def test_list(es):
+    assert es.removeExpense(1) == True
 
-    assert es.addExpense('Food','33') == True
-
-
-def test_list(es):
-    es.save

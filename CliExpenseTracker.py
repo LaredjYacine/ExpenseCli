@@ -25,15 +25,22 @@ class Expense :
                         self.expenses.append({'category': category, 'amount': price})
                         
         except FileNotFoundError:
-            with open(self.file, 'w')as f :
-                f.write('')
-
+            try :
+                with open(self.file, 'w')as f :
+                    f.write('')
+            except FileNotFoundError:
+                print(f"Error: The directory or path for '{self.file}' is bad/does not exist.")
 
 
     def saveExpense(self):
-        with open(self.file,'w') as f :
-            for e in self.expenses:
-                f.write(f"{e['category']},{e['amount']}\n")
+        try : 
+            with open(self.file,'w') as f :
+                for e in self.expenses:
+                    f.write(f"{e['category']},{e['amount']}\n")
+            return True 
+        except (FileNotFoundError, OSError) : 
+                return False 
+
 
     def addExpense(self,category,amount):
         try:
@@ -54,22 +61,22 @@ class Expense :
         except Exception:
             print('make sure u entered the correct category and amount')
         
-    def removeExpense(self):
-        self.viewExpenses()
+    def removeExpense(self,category):
+        #self.viewExpenses()
         try:
-            category= int(input('Enter which line : ').strip())
+            category = int(category)
             i = 1
             if category >=1 and category<=len(self.expenses):
                 self.expenses.pop(category-1) 
             self.saveExpense()
+            return True 
         except ValueError:
-            print(' enter a valid value ')
+            return 'enter a valid value'
 
 
-    def addAnewExpenseCategory(self):
+    def addAnewExpenseCategory(self,category,amount):
         try:
-            category= input('Enter New category : ')
-            amount = input('Enter Amount : ')
+
             self.expenses.append({'category': category , 'amount': amount})
             self.saveExpense()
             return True
