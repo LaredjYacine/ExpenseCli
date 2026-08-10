@@ -5,6 +5,8 @@ import os
 import json
 import asyncio
 import aiohttp  
+
+
 dotenv.load_dotenv(override=True)
 url = os.getenv('url')
 port=os.getenv('port')
@@ -16,13 +18,8 @@ alldata=[]
 gitoken= os.getenv('gittoken')
 
 headers = {
-    # 1. Authenticates your user account (Bypasses the 60/hr limit)
     "Authorization": f'Bearer {gitoken}',
-    
-    # 2. Tells GitHub you want the response formatted as JSON
     "Accept": "application/vnd.github+json",
-    
-    # 3. Specifies the API schema version (GitHub recommends locking this in)
     "X-GitHub-Api-Version": "2026-03-10",
 }
 
