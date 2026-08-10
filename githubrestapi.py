@@ -2,7 +2,9 @@ import requests
 import dotenv
 import psycopg2
 import os 
-import json 
+import json
+import asyncio
+import aiohttp  
 dotenv.load_dotenv(override=True)
 url = os.getenv('url')
 port=os.getenv('port')
@@ -10,12 +12,22 @@ hostname=os.getenv('hostname')
 username= os.getenv('username')
 password =os.getenv('password')
 database=os.getenv('database')
-session = requests.session()
 alldata=[]
-params= {
-    'per_page':100,
-    'page':1
+gitoken= os.getenv('gittoken')
+
+headers = {
+    # 1. Authenticates your user account (Bypasses the 60/hr limit)
+    "Authorization": f'Bearer {gitoken}',
+    
+    # 2. Tells GitHub you want the response formatted as JSON
+    "Accept": "application/vnd.github+json",
+    
+    # 3. Specifies the API schema version (GitHub recommends locking this in)
+    "X-GitHub-Api-Version": "2026-03-10",
 }
+
+
+
 pythotosql={
     'int':'INT',
     'float':'DECIMAL',
@@ -42,14 +54,41 @@ connection= psycopg2.connect(
   
 values = []
 repoDict=None
-while True:
-    response = session.get('https://api.github.com/users/LaredjYacine/repos',params=params)
-    data = response.json()
-    for info in data :
+calls = ['ApeXLgross','imshinyu','Serine404','0xHadyy','raideno','MedBelk','abderrahmenebe','BoyHMN']
+def httpcalls(session):
+    task=[]
+    for call in calls :
+            for i in range(1, 31):
+                params = {"per_page": 100, "page": i}
+                response = session.get(f'https://api.github.com/users/{call}/repos',params=params,headers=headers)
+                task.append(response)
+                
+
+                
+    return task 
+
+
+
+async def fetchingData():
+    data= []
+    async with aiohttp.ClientSession() as session:
+        task= httpcalls(session) 
+        responses = await asyncio.gather(*task)
+        for response in responses : 
+            
+            value = await response.json()             
+            if value :
+                data.extend(value)
         
-        values.append((info['id'],info['name'],info['full_name'],info['private'],info['html_url']))
-    if not data:
-        break
+    return data 
+
+column=[]
+
+data =asyncio.run(fetchingData())
+for info in data :
+    
+    values.append((info['id'],info['name'],info['full_name'],info['private'],info['html_url']))
+
     repoDict={
             'id':info['id'],
             'name':info['name'],
@@ -58,10 +97,8 @@ while True:
             'html_url': info['html_url']
         }
     alldata.extend(values)
-    params['page']+=1
 
 
-column=[]
 
 
 for name, value in repoDict.items():
@@ -71,7 +108,6 @@ for name, value in repoDict.items():
              continue
         column.append(f'{name} {datatype}')
 
-print(','.join(column))
 
 create_query=f"create table if  not exists gitrepo({','.join(column)})"
 cursor= connection.cursor()
@@ -80,7 +116,7 @@ connection.commit()
 
 #cursor.execute(create_script)
 for item in alldata:
-    insert_script = f"insert into gitrepo(id,name,full_name,private,html_url) values {item} "
+    insert_script = f"insert into gitrepo(id,name,full_name,private,html_url) values {item} on conflict (id)  do nothing  "
     cursor.execute(insert_script)
     
 connection.commit()
