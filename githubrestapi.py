@@ -97,6 +97,7 @@ for info in data :
     values=[]
 
 
+
 for name, value in repoDict.items():
         datatype= pythotosql.get(type(value).__name__,'TEXT')
         if name == 'id':

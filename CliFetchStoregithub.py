@@ -56,14 +56,23 @@ async def  Fetching(usernames,token):
     return data 
 
 
+
 def storingDatatoPush(data ):
      alldata=[]
      for info in data :
         values = []
     
         values.append((info['id'],info['name'],info['full_name'],info['private'],info['html_url']))
+        repo={
+            'id':info['id'],
+            'name':info['name'],
+            'full_name':info['full_name'],
+            'private':info['private'],
+            'html_url': info['html_url']
+        }
+
         alldata.extend(values)
-     return alldata
+     return alldata,repo
 
 def connectiontodb(hostname,db,username,password,port):
     connection= psycopg2.connect(
@@ -106,9 +115,21 @@ if args.command == 'fetch' :
 
 if args.command =='store':
     data = asyncio.run(Fetching(args.u,args.gittoken))
-    alldata = storingDatatoPush(data)
+    alldata,repoDict = storingDatatoPush(data)
+
     connection=connectiontodb(args.hostname,args.db,args.dbusername,args.password,args.port)
     cursor = connection.cursor()
+    column=[]
+    for name , value in repoDict.items():
+        datatype =pythotosql.get(type(value).__name__ ,'TEXT')
+        if name=='id' :
+            column.append(f'id {datatype} primary key not null')
+            continue
+        column.append(f'{name} {datatype}')
+
+    create_script= f'create table if not exists gitrepo({",".join(column)})'
+    cursor.execute(create_script)
+    connection.commit()
     for item in alldata:
         insert_script = f"insert into gitrepo(id,name,full_name,private,html_url) values {item} on conflict (id)  do nothing  "
         cursor.execute(insert_script)
