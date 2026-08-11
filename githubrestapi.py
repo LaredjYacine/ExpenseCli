@@ -94,8 +94,7 @@ for info in data :
             'html_url': info['html_url']
         }
     alldata.extend(values)
-
-
+    values=[]
 
 
 for name, value in repoDict.items():
@@ -116,5 +115,5 @@ for item in alldata:
     insert_script = f"insert into gitrepo(id,name,full_name,private,html_url) values {item} on conflict (id)  do nothing  "
     cursor.execute(insert_script)
     
-connection.commit()
+#connection.commit()
 connection.close()
